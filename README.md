@@ -54,6 +54,15 @@ e.g. `bob` / `bobpw`.)
 - [C5a HTTPS traffic audit](class5/README.md)
 - [C5b password storage audit](class5/password-audit.md)
 
+To run the HTTPS lab configuration on Windows:
+
+```powershell
+.\generate-https-certificate.ps1
+docker compose -f docker-compose.yml -f docker-compose.https.yml up -d --build
+```
+
+Open `https://localhost:8443`; plain HTTP on `http://localhost:8080` redirects to HTTPS.
+
 ## Reset
 
 ```

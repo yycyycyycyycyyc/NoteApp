@@ -12,3 +12,6 @@ venv/
 # Local env overrides
 .env
 .env.local
+
+# Locally generated TLS private material
+nginx/certs/

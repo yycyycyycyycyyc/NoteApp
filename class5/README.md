@@ -41,6 +41,28 @@ Chrome warned about the local certificate because its issuer was not trusted. HT
 
 **Result:** NotesApp works over HTTPS. The captured password is hidden, but the certificate is still self-signed.
 
+## 4. Reproduce the HTTPS configuration
+
+Generate the local certificate and start the base stack plus the HTTPS overlay:
+
+```powershell
+.\generate-https-certificate.ps1
+docker compose -f docker-compose.yml -f docker-compose.https.yml up -d --build
+```
+
+Nginx listens on `127.0.0.1:8080` for HTTP and redirects requests to `https://localhost:8443`. TLS terminates at Nginx, which proxies to `web:5000` over the private Compose network. The overlay removes Flask's published host port, so Flask is not directly reachable from the host.
+
+Verification commands:
+
+```powershell
+docker compose -f docker-compose.yml -f docker-compose.https.yml exec -T nginx nginx -t
+curl.exe -I http://localhost:8080/healthz
+curl.exe -k https://localhost:8443/healthz
+docker compose -f docker-compose.yml -f docker-compose.https.yml ps
+```
+
+Expected results are a `301` redirect containing `Location: https://localhost:8443/healthz`, an HTTPS response body of `ok`, three running containers, and no published port on the `web` service. The generated certificate and private key remain Git-ignored.
+
 [Lab instructions](https://kristenpire.github.io/epita-security-labs/class5/https-lab/)
 
 The separate [password storage audit](password-audit.md) records the C5b MD5 and Argon2 measurements.

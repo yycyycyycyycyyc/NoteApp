@@ -1,0 +1,28 @@
+NotesApp HTTPS verification - 25 October 2026
+
+nginx -t:
+  syntax is ok
+  configuration test is successful
+
+HTTP request:
+  HTTP/1.1 301 Moved Permanently
+  Location: https://localhost:8443/healthz
+
+HTTPS request:
+  GET https://localhost:8443/healthz
+  HTTP 200
+  response body: ok
+
+HTTPS login:
+  POST https://localhost:8443/login
+  HTTP 302
+  redirect: https://localhost:8443/
+
+Isolation:
+  nginx publishes 127.0.0.1:8080 and 127.0.0.1:8443
+  web publishes no host port; Docker PortBindings is {}
+
+Certificate:
+  subject=CN=localhost
+  issuer=CN=localhost
+  SAN=DNS:localhost, IP Address:127.0.0.1
