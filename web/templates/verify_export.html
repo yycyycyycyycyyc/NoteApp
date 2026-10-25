@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h1>CSV integrity check</h1>
+  {% if valid %}
+  <p><strong>Valid:</strong> the file content matches its HMAC.</p>
+  {% else %}
+  <p><strong>Rejected:</strong> the HMAC is missing or the file was changed.</p>
+  {% endif %}
+  <p><a href="{{ url_for('teacher') }}">Back to teacher page</a></p>
+</div>
+{% endblock %}

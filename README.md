@@ -13,13 +13,15 @@ admin manages users and classes.
 You need Docker with the Compose plugin.
 
 ```
-git clone git@github.com:KristenPire/NoteApp.git notesapp
+git clone https://github.com/yycyycyycyycyyc/NoteApp.git notesapp
 cd notesapp
+python3 create_comment_key.py
+python3 create_export_key.py
 docker compose up
 ```
 
 The first start builds the image, launches PostgreSQL, and loads the seed data
-automatically. When it is ready, open:
+automatically. Startup also migrates any legacy plaintext comments to AES-GCM ciphertext. The two generated keys remain in the Git-ignored `.env` file. When it is ready, open:
 
 ```
 http://localhost:8080
@@ -41,6 +43,14 @@ e.g. `bob` / `bobpw`.)
 - Python 3.11 + Flask (server-rendered Jinja2 pages and a small JSON API)
 - PostgreSQL 15
 - Docker Compose (`web` and `db` services)
+
+## Coursework
+
+- [Project 1 threat model](project1/README.md)
+- [C3 encrypted grade comments](comment-encryption.md)
+- [C4 HMAC-protected CSV exports](hmac-export.md)
+- [C5a HTTPS traffic audit](class5/README.md)
+- [C5b password storage audit](class5/password-audit.md)
 
 ## Reset
 

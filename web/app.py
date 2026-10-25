@@ -13,6 +13,11 @@ import base64
 import hashlib
 import subprocess
 
+from argon2 import PasswordHasher
+from argon2.exceptions import InvalidHash, VerifyMismatchError
+from comment_crypto import decrypt_comment, encrypt_comment
+from export_hmac import sign_csv, verify_csv
+
 import psycopg2
 import psycopg2.extras
 from flask import (
@@ -31,6 +36,18 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "dev-session-key")
 
 app = Flask(__name__)
 app.secret_key = SECRET_KEY
+ph = PasswordHasher()
+
+
+def is_argon2_hash(value: str) -> bool:
+    return value.startswith("$argon2")
+
+
+def decrypt_rows(rows):
+    for row in rows:
+        if row.get("comment") is not None:
+            row["comment"] = decrypt_comment(row["comment"])
+    return rows
 
 LOG_FILE = os.environ.get("NOTESAPP_LOG", "/var/log/notesapp/app.log")
 
@@ -146,8 +163,8 @@ def login():
         password = request.form.get("password", "")
         # Flaw #8: SQL injection. Query built by string concatenation, no params.
         query = (
-            "SELECT id, username, role FROM users "
-            "WHERE username = '" + username + "' AND password = '" + password + "'"
+            "SELECT id, username, role, password FROM users "
+            "WHERE username = '" + username + "'"
         )
         conn = get_db()
         cur = conn.cursor()
@@ -158,8 +175,23 @@ def login():
             # Keep the raw error visible - helps the SQLi session.
             error = f"Query error: {e}"
             row = None
-        conn.close()
+        authenticated = False
         if row:
+            stored = row["password"]
+            if is_argon2_hash(stored):
+                try:
+                    ph.verify(stored, password)
+                    authenticated = True
+                    if ph.check_needs_rehash(stored):
+                        cur.execute("UPDATE users SET password = %s WHERE id = %s", (ph.hash(password), row["id"]))
+                except (VerifyMismatchError, InvalidHash):
+                    authenticated = False
+            elif hmac.compare_digest(stored, password):
+                authenticated = True
+                cur.execute("UPDATE users SET password = %s WHERE id = %s", (ph.hash(password), row["id"]))
+                log(f"upgraded {row['username']} to argon2")
+        conn.close()
+        if authenticated:
             session["user_id"] = row["id"]
             session["username"] = row["username"]
             session["role"] = row["role"]
@@ -193,7 +225,7 @@ def dashboard():
         "WHERE n.student_id = %s ORDER BY c.name",
         (session["user_id"],),
     )
-    notes = cur.fetchall()
+    notes = decrypt_rows(cur.fetchall())
     conn.close()
     return render_template("dashboard.html", notes=notes, token=session.get("token"))
 
@@ -218,6 +250,7 @@ def api_notes(note_id):
     conn.close()
     if not note:
         return jsonify({"error": "not found"}), 404
+    note["comment"] = decrypt_comment(note["comment"])
     note["grade"] = float(note["grade"]) if note["grade"] is not None else None
     return jsonify(note)
 
@@ -237,7 +270,7 @@ def teacher():
         "FROM notes n JOIN users u ON u.id = n.student_id "
         "JOIN classes c ON c.id = n.class_id ORDER BY c.name, u.username"
     )
-    notes = cur.fetchall()
+    notes = decrypt_rows(cur.fetchall())
     cur.execute("SELECT id, username FROM users WHERE role = 'student' ORDER BY username")
     students = cur.fetchall()
     conn.close()
@@ -259,13 +292,13 @@ def grades():
     if note_id:
         cur.execute(
             "UPDATE notes SET grade = %s, comment = %s WHERE id = %s",
-            (grade, comment, note_id),
+            (grade, encrypt_comment(comment), note_id),
         )
     else:
         cur.execute(
             "INSERT INTO notes (student_id, class_id, grade, comment) "
             "VALUES (%s, %s, %s, %s)",
-            (student_id, class_id, grade, comment),
+            (student_id, class_id, grade, encrypt_comment(comment)),
         )
     conn.close()
     log(f"grade write by {session.get('username')} note_id={note_id or 'new'}")
@@ -293,17 +326,27 @@ def export_csv():
             "FROM notes n JOIN users u ON u.id = n.student_id "
             "JOIN classes c ON c.id = n.class_id ORDER BY c.name, u.username"
         )
-    rows = cur.fetchall()
+    rows = decrypt_rows(cur.fetchall())
     conn.close()
     buf = io.StringIO()
     writer = csv.writer(buf)
     writer.writerow(["student", "class", "grade", "comment"])
     for r in rows:
         writer.writerow([r["student"], r["class"], r["grade"], r["comment"]])
+    signed = sign_csv(buf.getvalue().encode("utf-8"))
     return Response(
-        buf.getvalue(), mimetype="text/csv",
+        signed, mimetype="text/csv",
         headers={"Content-Disposition": "attachment; filename=grades.csv"},
     )
+
+
+@app.route("/verify-export", methods=["POST"])
+def verify_export():
+    if not login_required("teacher"):
+        return redirect(url_for("login"))
+    upload = request.files.get("csv_file")
+    valid = bool(upload) and verify_csv(upload.read())
+    return render_template("verify_export.html", valid=valid)
 
 
 @app.route("/admin")

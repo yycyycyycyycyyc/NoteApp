@@ -42,3 +42,5 @@ Chrome warned about the local certificate because its issuer was not trusted. HT
 **Result:** NotesApp works over HTTPS. The captured password is hidden, but the certificate is still self-signed.
 
 [Lab instructions](https://kristenpire.github.io/epita-security-labs/class5/https-lab/)
+
+The separate [password storage audit](password-audit.md) records the C5b MD5 and Argon2 measurements.
