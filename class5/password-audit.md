@@ -1,7 +1,9 @@
 # NotesApp Password Audit
 
-**Name:** Yuchen Ye  
-**Student ID:** 2023901708  
+**Name:** Yuchen Ye
+
+**Student ID:** 2023901708
+
 **Date:** 25 October 2026
 
 ## Finding 1 - stored passwords (unsalted MD5)
