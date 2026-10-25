@@ -46,6 +46,8 @@ e.g. `bob` / `bobpw`.)
 
 ## Coursework
 
+- [Class 2 exploration and initial threat model](class2/README.md)
+- [Class 3 symmetric encryption lab](class3/README.md)
 - [Project 1 threat model](project1/README.md)
 - [C3 encrypted grade comments](comment-encryption.md)
 - [C4 HMAC-protected CSV exports](hmac-export.md)

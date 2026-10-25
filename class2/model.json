@@ -1,0 +1,11 @@
+{
+  "system": "NotesApp",
+  "components": ["Browser", "Flask web container", "PostgreSQL", "External ping target"],
+  "trust_boundaries": {
+    "TB1": "Browser to Flask",
+    "TB2": "Flask to PostgreSQL",
+    "TB3": "Web container to external target or Docker host"
+  },
+  "flow_count": 28,
+  "top_risks": ["admin command injection", "Docker socket exposure", "forgeable JWT and IDOR"]
+}
