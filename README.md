@@ -1,44 +1,79 @@
-# NotesApp HTTPS Lab
+# NotesApp
 
-**Name:** Haitian Gao
+## Student
 
-**Student ID:** 2023903116
+Yuchen Ye
 
-**Partner:** 叶与陈 Yuchen Ye
+A small grades application used throughout the Computer Security course. Teachers
+record grades and comments for their classes, students read their own grades, and an
+admin manages users and classes.
 
-**Partner student ID:** 2023901708
+## Run it
 
-**Date:** 22 October 2026
+You need Docker with the Compose plugin.
 
-## 1. HTTP login
-
-The password was readable in Wireshark:
-
-```text
-username=alice&password=alicepw
+```
+git clone git@github.com:KristenPire/NoteApp.git notesapp
+cd notesapp
+docker compose up
 ```
 
-- **Who can read it:** In this local test, someone with permission to capture loopback traffic.
-- **Severity:** High if the same HTTP login is used on an untrusted network, because the password can be stolen.
-- **Fix:** Add Nginx with HTTPS and stop exposing Flask directly.
+The first start builds the image, launches PostgreSQL, and loads the seed data
+automatically. When it is ready, open:
 
-![HTTP: readable username and password](evidence/http-screenshot.png)
+```
+http://localhost:8080
+```
 
-## 2. HTTPS test
+## Test accounts
 
-The login still worked at `https://localhost:8443`. Wireshark showed TLS 1.3 application data, and the username and password were no longer readable. HTTP on port 8080 now redirects to HTTPS.
+| Role    | Username      | Password   |
+|---------|---------------|------------|
+| Student | `alice`       | `alicepw`  |
+| Teacher | `prof.turing` | `teach123` |
+| Admin   | `admin`       | `admin123` |
 
-The two captures used the same login sent with curl, without cookies. Chrome login was also checked.
+(There are ~30 students in total; each student's password is their username + `pw`,
+e.g. `bob` / `bobpw`.)
 
-![HTTPS: encrypted traffic](evidence/https-screenshot.png)
+## Stack
 
-## 3. Certificate check
+- Python 3.11 + Flask (server-rendered Jinja2 pages and a small JSON API)
+- PostgreSQL 15
+- Docker Compose (`web` and `db` services)
 
-- **GitHub issuer:** Sectigo Public Server Authentication CA DV E36.
-- **Local issuer:** localhost, signed by itself.
+## Reset
 
-Chrome warned about the local certificate because its issuer was not trusted. HTTPS encrypts the connection, but a self-signed certificate does not prove the server's identity through a trusted CA.
+```
+docker compose down -v   # wipes the database volume
+docker compose up        # reloads the seed data
+```
 
-**Result:** NotesApp works over HTTPS. The captured password is hidden, but the certificate is still self-signed.
+## Updating your fork
 
-[Lab instructions](https://kristenpire.github.io/epita-security-labs/class5/https-lab/)
+The course repository is sometimes updated. Your fork does **not** update by itself.
+To pull the latest changes into your fork:
+
+**Easiest (GitHub website):** open your fork, and if it says *"This branch is behind
+KristenPire/NoteApp"*, click **Sync fork → Update branch**. Then, in your local clone:
+
+```
+git pull
+```
+
+**Command line (keeps your own commits):**
+
+```
+git remote add upstream https://github.com/KristenPire/NoteApp.git   # once
+git fetch upstream
+git merge upstream/main
+git push
+```
+
+Then **rebuild**, because the app code is baked into the Docker image:
+
+```
+docker compose up --build
+```
+
+A plain `docker compose up` would keep running the old image.
