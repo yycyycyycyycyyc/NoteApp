@@ -18,4 +18,3 @@ docker run --rm `
 
 if ($LASTEXITCODE -ne 0) { throw "Certificate generation failed." }
 Write-Host "Created a local self-signed certificate for localhost."
-
