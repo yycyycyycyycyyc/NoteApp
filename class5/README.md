@@ -65,4 +65,4 @@ Expected results are a `301` redirect containing `Location: https://localhost:84
 
 [Lab instructions](https://kristenpire.github.io/epita-security-labs/class5/https-lab/)
 
-The separate [password storage audit](password-audit.md) records the C5b MD5 and Argon2 measurements.
+The separate [password storage audit](password-audit/README.md) records the C5b MD5 and Argon2 measurements.

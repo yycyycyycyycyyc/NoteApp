@@ -52,7 +52,7 @@ e.g. `bob` / `bobpw`.)
 - [C3 encrypted grade comments](comment-encryption.md)
 - [C4 HMAC-protected CSV exports](hmac-export.md)
 - [C5a HTTPS traffic audit](class5/README.md)
-- [C5b password storage audit](class5/password-audit.md)
+- [C5b password storage audit](class5/password-audit/README.md)
 
 To run the HTTPS lab configuration on Windows:
 
