@@ -4,7 +4,7 @@ Haitian Gao (2023903116)
 
 26 October 2026
 
-Partner: 叶与陈 (2023901708)
+Partner: 叶与陈 Yuchen Ye (2023901708)
 
 ## Finding 1 Stored passwords
 
