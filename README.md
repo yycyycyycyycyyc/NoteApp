@@ -17,11 +17,12 @@ git clone https://github.com/yycyycyycyycyyc/NoteApp.git notesapp
 cd notesapp
 python3 create_comment_key.py
 python3 create_export_key.py
+python3 create_jwt_secret.py
 docker compose up
 ```
 
 The first start builds the image, launches PostgreSQL, and loads the seed data
-automatically. Startup also migrates any legacy plaintext comments to AES-GCM ciphertext. The two generated keys remain in the Git-ignored `.env` file. When it is ready, open:
+automatically. Startup also migrates any legacy plaintext comments to AES-GCM ciphertext. The generated keys remain in the Git-ignored `.env` file. When it is ready, open:
 
 ```
 http://localhost:8080
@@ -53,6 +54,7 @@ e.g. `bob` / `bobpw`.)
 - [C4 HMAC-protected CSV exports](hmac-export.md)
 - [C5a HTTPS traffic audit](class5/README.md)
 - [C5b password storage audit](class5/password-audit/README.md)
+- [Class 7 JWT login fix](class7/README.md)
 
 To run the HTTPS lab configuration on Windows:
 
