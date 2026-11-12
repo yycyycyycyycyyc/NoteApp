@@ -55,6 +55,7 @@ e.g. `bob` / `bobpw`.)
 - [C5a HTTPS traffic audit](class5/README.md)
 - [C5b password storage audit](class5/password-audit/README.md)
 - [Class 7 JWT login fix](class7/README.md)
+- [Class 8 IDOR access-control fix](class8/README.md)
 
 To run the HTTPS lab configuration on Windows:
 
