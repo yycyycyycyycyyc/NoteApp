@@ -56,6 +56,7 @@ e.g. `bob` / `bobpw`.)
 - [C5b password storage audit](class5/password-audit/README.md)
 - [Class 7 JWT login fix](class7/README.md)
 - [Class 8 IDOR access-control fix](class8/README.md)
+- [Class 9 injection fix (SQL injection and command injection)](class9/README.md)
 
 To run the HTTPS lab configuration on Windows:
 

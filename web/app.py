@@ -8,6 +8,7 @@ import csv
 import io
 import json
 import hmac
+import re
 import time
 import base64
 import hashlib
@@ -160,15 +161,14 @@ def login():
     if request.method == "POST":
         username = request.form.get("username", "")
         password = request.form.get("password", "")
-        # Flaw #8: SQL injection. Query built by string concatenation, no params.
-        query = (
-            "SELECT id, username, role, password FROM users "
-            "WHERE username = '" + username + "'"
-        )
+        # FIX #8: parameterised query. The username is bound as a value, so a
+        # quote in it can no longer end the string literal and add SQL grammar
+        # (no UNION, no comment-out, no error-based extraction).
+        query = "SELECT id, username, role, password FROM users WHERE username = %s"
         conn = get_db()
         cur = conn.cursor()
         try:
-            cur.execute(query)
+            cur.execute(query, (username,))
             row = cur.fetchone()
         except Exception as e:
             # Keep the raw error visible - helps the SQLi session.
@@ -371,15 +371,20 @@ def admin():
 
 @app.route("/admin/ping", methods=["POST"])
 def admin_ping():
-    # Flaw #11: no CSRF token. Flaw #9: command injection via os/system shell.
+    # Flaw #11: no CSRF token (left for the CSRF lab).
     if not login_required("admin"):
         return redirect(url_for("login"))
     host = request.form.get("host", "")
-    # Host is concatenated straight into a shell command.
-    cmd = "ping -c 1 " + host
+    # FIX #9: no shell any more. The host travels as one single argument, so
+    # "; id" stays inside that argument and the shell never sees it.
+    if not re.fullmatch(r"[A-Za-z0-9.-]+", host):
+        log(f"admin ping rejected host={host!r}")
+        return render_template("admin.html", users=_all_users(), classes=_all_classes(),
+                               ping_result=f"invalid host: {host!r}")
     try:
         result = subprocess.run(
-            cmd, shell=True, capture_output=True, text=True, timeout=10,
+            ["ping", "-c", "1", host],
+            capture_output=True, text=True, timeout=10,
         )
         output = result.stdout + result.stderr
     except Exception as e:
