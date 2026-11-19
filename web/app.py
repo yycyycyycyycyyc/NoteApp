@@ -9,6 +9,7 @@ import io
 import json
 import hmac
 import re
+import secrets
 import time
 import base64
 import hashlib
@@ -40,6 +41,32 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "dev-session-key")
 app = Flask(__name__)
 app.secret_key = SECRET_KEY
 ph = PasswordHasher()
+
+# Defence in depth (flaw #11): keep the session cookie off most cross-site POSTs.
+# This is the browser's seatbelt - the server still checks a token below.
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+
+
+# --- CSRF protection (flaw #11) ----------------------------------------------
+def csrf_token():
+    """One random secret per session. Our own forms print it; other sites cannot read it."""
+    if "csrf" not in session:
+        session["csrf"] = secrets.token_urlsafe(32)
+    return session["csrf"]
+
+
+app.jinja_env.globals["csrf_token"] = csrf_token
+
+
+@app.before_request
+def check_csrf():
+    """Every state-changing POST must carry the session's token."""
+    if request.method == "POST" and request.endpoint != "login":
+        expected = session.get("csrf")
+        sent = request.form.get("csrf_token", "")
+        # Fail closed: no expected token means refuse (never compare "" with "").
+        if not expected or not hmac.compare_digest(sent, expected):
+            abort(400, "CSRF token missing or wrong")
 
 
 def is_argon2_hash(value: str) -> bool:

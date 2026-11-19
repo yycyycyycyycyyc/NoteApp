@@ -58,6 +58,7 @@ e.g. `bob` / `bobpw`.)
 - [Class 8 IDOR access-control fix](class8/README.md)
 - [Class 9 injection fix (SQL injection and command injection)](class9/README.md)
 - [Class 10 stored XSS fix](class10/README.md)
+- [Class 11 CSRF fix](class11/README.md)
 
 To run the HTTPS lab configuration on Windows:
 
