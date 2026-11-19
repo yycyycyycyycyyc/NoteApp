@@ -57,6 +57,7 @@ e.g. `bob` / `bobpw`.)
 - [Class 7 JWT login fix](class7/README.md)
 - [Class 8 IDOR access-control fix](class8/README.md)
 - [Class 9 injection fix (SQL injection and command injection)](class9/README.md)
+- [Class 10 stored XSS fix](class10/README.md)
 
 To run the HTTPS lab configuration on Windows:
 
